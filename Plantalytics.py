@@ -39,13 +39,14 @@ def capture_sensor_data():
 
     # Read data from SHT40 temperature and humidity sensor
     temperature = sht.temperature
+    temperature_f = temperature * 9/5 + 32  # Convert temperature to Fahrenheit
     humidity = sht.relative_humidity
 
     # Read data from STEMMA soil sensor
     moisture = ss.moisture_read()
 
     # Return sensor data as a dictionary
-    return {'temperature': temperature, 'humidity': humidity, 'moisture': moisture, 'light_intensity': lux}
+    return {'temperature': temperature_f, 'humidity': humidity, 'moisture': moisture, 'light_intensity': lux}
 
 # Define a function to make decisions based on the outputs of the models
 def make_decisions(sensor_data_array):
@@ -77,7 +78,7 @@ def update_display():
     sensor_data = capture_sensor_data()
 
     texts = [
-        f"Temperature: {sensor_data['temperature']:.1f}C",
+        f"Temperature: {sensor_data['temperature']:.1f}F",  # Display temperature in Fahrenheit
         f"Humidity: {sensor_data['humidity']:.1f}%",
         f"Moisture: {sensor_data['moisture']:.1f}%",
         f"Light Intensity: {sensor_data['light_intensity']:.1f} lux",
@@ -88,6 +89,7 @@ def update_display():
         screen.blit(text_surface, (20, 20 + i * 40))
 
     pygame.display.flip()
+
 
 def main_loop():
     running = True
