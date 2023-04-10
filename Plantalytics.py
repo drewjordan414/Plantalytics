@@ -27,6 +27,9 @@ temperature_meter.pack()
 humidity_meter = tk.Label(window, text="Humidity: ")
 humidity_meter.pack()
 
+light_intensity_meter = tk.Label(window, text="Light Intensity: ")
+light_intensity_meter.pack()
+
 # Load the trained machine learning models
 plant_classification_model = tf.keras.models.load_model('plant_classification_model.h5')
 plant_disease_detection_model = tf.keras.models.load_model('plant_disease_detection_model.h5')
@@ -74,7 +77,8 @@ def capture_sensor_data():
     lcd.message('Humidity: {:.1f} %'.format(humidity))
 
     # Return sensor data as a dictionary
-    return {'temperature': temperature, 'humidity': humidity, 'moisture': moisture}
+    return {'temperature': temperature, 'humidity': humidity, 'moisture': moisture, 'light_intensity': lux}
+
 # Define a function to update the meters on the GUI
 def update_meters():
     # Read data from STEMMA soil sensor
@@ -86,6 +90,11 @@ def update_meters():
     moisture_meter.config(text="Moisture: {:.1f}%".format(moisture))
     temperature_meter.config(text="Temperature: {:.1f}C".format(temperature))
     humidity_meter.config(text="Humidity: {:.1f}%".format(humidity))
+
+    # Read data from TSL2591 light sensor
+    lux = tsl.lux
+    light_intensity_meter.config(text="Light Intensity: {:.1f} lux".format(lux))
+
     # Call this function again after 5 seconds
     window.after(5000, update_meters)
 
