@@ -1,42 +1,13 @@
 import time
 import board
-import busio 
+import busio
 import adafruit_tsl2591
 import adafruit_sht4x
 import adafruit_seesaw
 from adafruit_seesaw import SeesawSoil
-import numpy as np 
-import pandas as pd 
-import tensorflow as tf 
-import digitalio
-import adafruit_character_lcd.character_lcd as charlcd
-import tkinter as tk 
-
-# Initialize the Tkinter window
-window = tk.Tk()
-window.title("Plant Monitor")
-window.geometry("400x200")
-
-# Define meters on the GUI
-moisture_meter = tk.Label(window, text="Moisture: ")
-moisture_meter.pack()
-
-temperature_meter = tk.Label(window, text="Temperature: ")
-temperature_meter.pack()
-
-humidity_meter = tk.Label(window, text="Humidity: ")
-humidity_meter.pack()
-
-light_intensity_meter = tk.Label(window, text="Light Intensity: ")
-light_intensity_meter.pack()
-
-environment_prediction_meter = tk.Label(window, text="Env. Prediction: ")
-environment_prediction_meter.pack()
-
-# Load the trained machine learning models
-plant_classification_model = tf.keras.models.load_model('plant_classification_model.h5')
-plant_disease_detection_model = tf.keras.models.load_model('plant_disease_detection_model.h5')
-environment_optimization_model = tf.keras.models.load_model('environment_optimization_model.h5')
+import numpy as np
+import tensorflow as tf
+import pygame
 
 # Initialize I2C bus
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -50,18 +21,17 @@ sht = adafruit_sht4x.SHT4x(i2c)
 # Initialize STEMMA soil sensor
 ss = SeesawSoil(i2c, addr=0x36)
 
-# Initialize LCD display
-lcd_columns = 16
-lcd_rows = 2
-lcd_rs = digitalio.DigitalInOut(board.D22)
-lcd_en = digitalio.DigitalInOut(board.D24)
-lcd_d4 = digitalio.DigitalInOut(board.D26)
-lcd_d5 = digitalio.DigitalInOut(board.D19)
-lcd_d6 = digitalio.DigitalInOut(board.D13)
-lcd_d7 = digitalio.DigitalInOut(board.D6)
-lcd_backlight = digitalio.DigitalInOut(board.D5)
+# Load the trained machine learning models
+plant_classification_model = tf.keras.models.load_model('plant_classification_model.h5')
+plant_disease_detection_model = tf.keras.models.load_model('plant_disease_detection_model.h5')
+environment_optimization_model = tf.keras.models.load_model('environment_optimization_model.h5')
 
-lcd = charlcd.Character_LCD_Mono(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_columns, lcd_rows)
+# Initialize the Pygame screen
+pygame.init()
+screen = pygame.display.set_mode((800, 480))
+pygame.display.set_caption("Plant Monitor")
+font = pygame.font.Font(None, 36)
+clock = pygame.time.Clock()
 
 def capture_sensor_data():
     # Read data from TSL2591 light sensor
@@ -74,49 +44,19 @@ def capture_sensor_data():
     # Read data from STEMMA soil sensor
     moisture = ss.moisture_read()
 
-    # Display sensor data on LCD
-    lcd.clear()
-    lcd.message('Temp: {:.1f} C\n'.format(temperature))
-    lcd.message('Humidity: {:.1f} %'.format(humidity))
-
     # Return sensor data as a dictionary
     return {'temperature': temperature, 'humidity': humidity, 'moisture': moisture, 'light_intensity': lux}
 
-# Define a function to update the meters on the GUI
-def update_meters():
-    # Read data from STEMMA soil sensor
-    moisture = ss.moisture_read()
-    # Read data from SHT40 temperature and humidity sensor
-    temperature = sht.temperature
-    humidity = sht.relative_humidity
-    # Update meters on the GUI
-    moisture_meter.config(text="Moisture: {:.1f}%".format(moisture))
-    temperature_meter.config(text="Temperature: {:.1f}C".format(temperature))
-    humidity_meter.config(text="Humidity: {:.1f}%".format(humidity))
-
-    # Read data from TSL2591 light sensor
-    lux = tsl.lux
-    light_intensity_meter.config(text="Light Intensity: {:.1f} lux".format(lux))
-
-    # Capture sensor data and predict optimal environment
-    sensor_data = capture_sensor_data()
-    sensor_data_array = np.array([[sensor_data['temperature'], sensor_data['humidity'], sensor_data['moisture']]])
+# Define a function to make decisions based on the outputs of the models
+def make_decisions(sensor_data_array):
     environment_prediction = environment_optimization_model.predict(sensor_data_array)
 
-    # Update the GUI with environment prediction score
-    environment_prediction_meter.config(text="Env. Prediction: {:.2f}".format(environment_prediction[0][0]))
-
-    # Call this function again after 5 seconds
-    window.after(5000, update_meters)
-
-
-# Define a function to make decisions based on the outputs of the models
-def make_decisions(environment_prediction, sensor_data):
-    # Make decisions based on plant health and environment factors
     if environment_prediction >= 0.75:
         decision = 'continue'
     elif environment_prediction >= 0.5:
         decision = 'treat'
+    else:
+        decision = 'unknown'
     
     # Return decision
     return decision
@@ -130,28 +70,46 @@ def control_actuators(decision):
     elif decision == 'treat':
         # Your code here for treating plant disease
         pass
- 
-# Define a function for the main loop
-def main_loop():
-    # Capture sensor data and predict optimal environment
+
+def update_display():
+    screen.fill((0, 0, 0))
+
     sensor_data = capture_sensor_data()
-    sensor_data_array = np.array([[sensor_data['temperature'], sensor_data['humidity'], sensor_data['moisture']]])
-    environment_prediction = environment_optimization_model.predict(sensor_data_array)
-    
-    # Make decisions based on predictions
-    decision = make_decisions(environment_prediction, sensor_data)
-    
-    # Control actuators based on decisions
-    control_actuators(decision)
-    
-    # Call this function again after 5 seconds
-    window.after(5000, main_loop)
 
-# Start updating meters on the GUI
-update_meters()
+    texts = [
+        f"Temperature: {sensor_data['temperature']:.1f}C",
+        f"Humidity: {sensor_data['humidity']:.1f}%",
+        f"Moisture: {sensor_data['moisture']:.1f}%",
+        f"Light Intensity: {sensor_data['light_intensity']:.1f} lux",
+    ]
 
-# Start the main loop
+    for i, text in enumerate(texts):
+        text_surface = font.render(text, True, (255, 255, 255))
+        screen.blit(text_surface, (20, 20 + i * 40))
+
+    pygame.display.flip()
+
+def main_loop():
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Capture sensor data and predict optimal environment
+        sensor_data = capture_sensor_data()
+        sensor_data_array = np.array([[sensor_data['temperature'], sensor_data['humidity'], sensor_data['moisture']]])
+        
+        # Make decisions based on predictions
+        decision = make_decisions(sensor_data_array)
+        
+        # Control actuators based on decisions
+        control_actuators(decision)
+
+        update_display()
+        time.sleep(5)
+
+    pygame.quit()
+
 main_loop()
-
-# Start the Tkinter main event loop
-window.mainloop()
