@@ -105,8 +105,6 @@ def make_decisions(environment_prediction, sensor_data):
         decision = 'continue'
     elif environment_prediction >= 0.5:
         decision = 'treat'
-    else:
-        decision = 'replace'
     
     # Return decision
     return decision
@@ -120,10 +118,7 @@ def control_actuators(decision):
     elif decision == 'treat':
         # Your code here for treating plant disease
         pass
-    elif decision == 'replace':
-        # Your code here for replacing the plant
-        pass
-
+ 
 # Define a function for the main loop
 def main_loop():
     # Capture sensor data and predict optimal environment
