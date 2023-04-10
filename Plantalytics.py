@@ -30,6 +30,9 @@ humidity_meter.pack()
 light_intensity_meter = tk.Label(window, text="Light Intensity: ")
 light_intensity_meter.pack()
 
+environment_prediction_meter = tk.Label(window, text="Env. Prediction: ")
+environment_prediction_meter.pack()
+
 # Load the trained machine learning models
 plant_classification_model = tf.keras.models.load_model('plant_classification_model.h5')
 plant_disease_detection_model = tf.keras.models.load_model('plant_disease_detection_model.h5')
@@ -95,8 +98,17 @@ def update_meters():
     lux = tsl.lux
     light_intensity_meter.config(text="Light Intensity: {:.1f} lux".format(lux))
 
+    # Capture sensor data and predict optimal environment
+    sensor_data = capture_sensor_data()
+    sensor_data_array = np.array([[sensor_data['temperature'], sensor_data['humidity'], sensor_data['moisture']]])
+    environment_prediction = environment_optimization_model.predict(sensor_data_array)
+
+    # Update the GUI with environment prediction score
+    environment_prediction_meter.config(text="Env. Prediction: {:.2f}".format(environment_prediction[0][0]))
+
     # Call this function again after 5 seconds
     window.after(5000, update_meters)
+
 
 # Define a function to make decisions based on the outputs of the models
 def make_decisions(environment_prediction, sensor_data):
