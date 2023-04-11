@@ -4,7 +4,7 @@ import busio
 import adafruit_tsl2591
 import adafruit_sht4x
 import adafruit_seesaw
-from adafruit_seesaw import SeesawSoil
+import adafruit_seesaw.seesaw as seesaw
 import numpy as np
 import tensorflow as tf
 import pygame
