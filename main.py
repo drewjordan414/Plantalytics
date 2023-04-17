@@ -114,7 +114,7 @@ def plant_disease_detection():
         result = "Healthy Plant"
     else:
         result = "Diseased Plant"
-    return render_template("plant_disease_detection.html", result=result)
+    return render_template("page2.html", result=result)
 
 # Define routes for the web server
 @app.route("/")
@@ -141,3 +141,4 @@ def sensor_data():
 # Run the Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
