@@ -12,9 +12,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, Res
 import cv2
 import torch
 import torchvision.models as models
-import cv2
 import numpy as np
-
 
 # Set up the GPIO pins for the relay
 GPIO.setmode(GPIO.BCM)
@@ -24,8 +22,9 @@ GPIO.setup(27, GPIO.OUT)
 GPIO.setup(10, GPIO.OUT)
 
 # Sensor setup
+i2c = board.I2C()
 i2c_bus = busio.I2C(board.SCL, board.SDA)
-sht = adafruit_sht4x.SHT4X(i2c_bus)
+sht = adafruit_sht4x.SHT4x(i2c_bus)
 ss = ss.Seesaw(i2c_bus, addr=0x36)
 
 # Define a class for relay control
@@ -128,6 +127,14 @@ def set_relay_route():
     set_relay(channel, state)
     return "OK"
 
+def gen():
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, frame = cap.read()
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+
 @app.route('/video_feed')
 def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -137,8 +144,8 @@ def sensor_data():
     data = read_sensor_data()
     return jsonify(data)
 
-
 # Run the Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
 
