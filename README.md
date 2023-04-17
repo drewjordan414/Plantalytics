@@ -25,7 +25,7 @@ In addition to the hardware components, you will need the following software and
 - NumPy - A library for numerical operations in Python.
 - Pandas - A library for data manipulation and analysis in Python.
 
-## About the Models
+## About the Model
 1.  **plant_disease_detection_model**: This model is designed to detect plant diseases based on input data (typically images of plant leaves or other plant parts). The model identifies whether a plant is healthy or suffering from a specific disease. It is stored in the 'plant_disease_detection_model.h5' file and loaded into the program using TensorFlow.
 
 
