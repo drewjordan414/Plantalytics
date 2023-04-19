@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="styles.css" rel="stylesheet" type="text/css">
+  <link href="static/styles.css" rel="stylesheet" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/svg-gauge@1.0.1/dist/gauge.min.js"></script>
+  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
   <title>Grow Tent Control</title>
 </head>
 
 <body>
+    <a href="page2.html">Camera</a>
     <h1>Grow Tent Control</h1>
     <div class="container">
       <div class="sensor-data">
@@ -27,47 +29,47 @@
         </div>
       </div>
       <div class="relay-controls">
-        <div class="relay-control" id="relay-18">
+        <div class="relay-control" id="relay-17">
           <h2>Relay 1:</h2>
           <label class="switch">
-            <input type="checkbox" id="relay-18-checkbox" onchange="setRelay(18, this.checked ? 'on' : 'off')">
+            <input type="checkbox" id="relay-17-checkbox" onchange="setRelay(17, this.checked ? 'on' : 'off')">
             <div><span></span></div>
           </label>
           <label class="toggle-control">
-            <input type="checkbox" checked="checked">
+            <input type="checkbox">
             <span class="control"></span>
           </label>
         </div>
-        <div class="relay-control" id="relay-23">
+        <div class="relay-control" id="relay-27">
           <h2>Relay 2:</h2>
           <label class="switch">
-            <input type="checkbox" id="relay-23-checkbox" onchange="setRelay(23, this.checked ? 'on' : 'off')">
+            <input type="checkbox" id="relay-27-checkbox" onchange="setRelay(27, this.checked ? 'on' : 'off')">
             <div><span></span></div>
           </label>
           <label class="toggle-control">
-            <input type="checkbox" checked="checked">
+            <input type="checkbox">
             <span class="control"></span>
           </label>
         </div>
-        <div class="relay-control" id="relay-24">
+        <div class="relay-control" id="relay-22">
           <h2>Relay 3:</h2>
           <label class="switch">
-            <input type="checkbox" id="relay-24-checkbox" onchange="setRelay(24, this.checked ? 'on' : 'off')">
+            <input type="checkbox" id="relay-22-checkbox" onchange="setRelay(22, this.checked ? 'on' : 'off')">
             <div><span></span></div>
           </label>
           <label class="toggle-control">
-            <input type="checkbox" checked="checked">
+            <input type="checkbox">
             <span class="control"></span>
           </label>
         </div>
-        <div class="relay-control" id="relay-25">
+        <div class="relay-control" id="relay-10">
           <h2>Relay 4:</h2>
           <label class="switch">
-            <input type="checkbox" id="relay-25-checkbox" onchange="setRelay(25, this.checked ? 'on' : 'off')">
+            <input type="checkbox" id="relay-10-checkbox" onchange="setRelay(10, this.checked ? 'on' : 'off')">
             <div><span></span></div>
           </label>
           <label class="toggle-control">
-            <input type="checkbox" checked="checked">
+            <input type="checkbox">
             <span class="control"></span>
           </label>
         </div>
@@ -94,25 +96,28 @@
                 channel: channel,
                 state: state
             })
-        });
+        })
+
     }
 
-    // Fetch sensor data and update display elements
+
+ // Fetch sensor data and update display elements
     function updateSensorData() {
-        fetch('/sensor-data')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('temperature').innerHTML = data.temperature.toFixed(1);
-                temperatureGauge.setValueAnimated(data.temperature);
+      fetch('/static/data.json')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('temperature').innerHTML = data.temperature.toFixed(1);
+              temperatureGauge.setValueAnimated(data.temperature);
 
-                document.getElementById('humidity').innerHTML = data.humidity.toFixed(1);
-                humidityGauge.setValueAnimated(data.humidity);
+              document.getElementById('humidity').innerHTML = data.humidity.toFixed(1);
+              humidityGauge.setValueAnimated(data.humidity);
 
-                document.getElementById('moisture').innerHTML = data.moisture.toFixed(1);
-                moistureGauge.setValueAnimated(data.moisture);
-            })
-            .catch(error => console.error(error));
+              document.getElementById('moisture').innerHTML = data.moisture.toFixed(1);
+              moistureGauge.setValueAnimated(data.moisture);
+          })
+          .catch(error => console.error(error));
     }
+
 
     // Update gauge value when sensor data is fetched
     function updateGaugeValue(value, type) {
@@ -137,7 +142,7 @@
         temperatureGauge = Gauge(
             document.getElementById("gauge-temperature"),
             {
-                max: 40,
+                max: 150,
                 value: 0,
                 label: 'Temperature (°C)',
                 color: '#FF7F50'
@@ -157,7 +162,7 @@
         moistureGauge = Gauge(
             document.getElementById("gauge-moisture"),
             {
-                max: 100,
+                max: 2000,
                 value: 0,
                 label: 'Moisture',
                 color: '#3CB371'
@@ -185,3 +190,5 @@
     </footer>
 </body>
 </html>
+
+
