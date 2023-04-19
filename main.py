@@ -2,11 +2,12 @@
 import RPi.GPIO as GPIO
 import board
 import busio
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import adafruit_sht4x
 import adafruit_seesaw.seesaw as ss
 import smbus2
 import json
+import cv2
 
 #disable gpio warings 
 GPIO.setwarnings(False)
@@ -25,38 +26,19 @@ i2c = busio.I2C(3, 2)
 sht = adafruit_sht4x.SHT4x(i2c, address=0x44)
 ss = ss.Seesaw(i2c, addr=0x36)
 
-# Define a class for relay control
-# class Relay:
-#     def __init__(self, pin):
-#         self.pin = pin
-#         GPIO.setup(self.pin, GPIO.OUT)
-#         GPIO.output(self.pin, GPIO.LOW)
-
-#     def on(self):
-#         GPIO.output(self.pin, GPIO.HIGH)
-
-#     def off(self):
-#         GPIO.output(self.pin, GPIO.LOW)
-
-#     def is_on(self):
-#         return GPIO.input(self.pin) == GPIO.HIGH
-
-#     def is_off(self):
-#         return GPIO.input(self.pin) == GPIO.LOW
-
-# Define the set_relay function
-# def set_relay(channel, state):
-#     relay = Relay(channel)
-#     if state == "on":
-#         relay.on()
-#     else:
-#         relay.off()
-
 # Set up the Flask app
 app = Flask(__name__, static_folder='static')
 
-# def light1():
-#     GPIO.output(17, GPIO.LOW)    
+def gen():
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+          
 
 def read_sensor_data():
     # Read temperature in Celsius
@@ -82,6 +64,13 @@ def index():
         json.dump(data, f)
     return render_template("index.html")
 
+@app.route("/page2.html")
+def page2():
+    def video_feed():
+        return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return render_template("page2.html")
+
+
 @app.route('/set-relay', methods=['POST'])
 def set_relay_route():
     channel = request.json.get('channel')
@@ -102,6 +91,12 @@ def sensor_data():
     data = read_sensor_data()
     jsonSensorData = jsonify(data)
     return jsonSensorData
+
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # Run the Flask app
 if __name__ == '__main__':
