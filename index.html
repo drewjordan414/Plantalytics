@@ -3,192 +3,78 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="static/styles.css" rel="stylesheet" type="text/css">
-  <script src="https://cdn.jsdelivr.net/npm/svg-gauge@1.0.1/dist/gauge.min.js"></script>
-  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" type="text/css">
-  <title>Grow Tent Control</title>
+  <title>Grow Tent Dashboard</title>
+
+  <!-- bootstrap and other CDNs -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  <!-- stylesheets -->
+  <link rel="reset" href="./static/reset.css">
+  <link rel="stylesheet" href="./static/style.css">
 </head>
 
 <body>
-    <a href="/page2.html">Camera</a>
-    <h1>Grow Tent Control</h1>
-    <div class="container">
-      <div class="sensor-data">
-        <div class="gauge-wrapper">
-          <p>Temperature: <span id="temperature"></span>°F</p>
-          <div id="gauge-temperature" class="gauge-container"></div>
+  <header>
+    <nav class="navbar navbar-dark bg-dark" style="height: 80px;">
+      <h1 class="navbar-brand" style="justify-content: center;">Grow Tent Dashboard</h1>
+    </nav>
+  </header>
+
+  <main class="container my-4">
+    <section id="sensor-data">
+      <h2 class="mb-3" style="text-align: center;">Current Sensor Data</h2>
+      <!-- Sensor data will go here -->
+      <div id="gauges" class="row">
+        <!-- Temperature gauge -->
+        <div id="gauge-temperature" class="col-lg-4"></div>
+
+        <!-- Humidity gauge -->
+        <div id="gauge-humidity" class="col-lg-4"></div>
+
+        <!-- Moisture gauge -->
+        <div id="gauge-moisture" class="col-lg-4"></div>
+      </div>
+    </section>
+
+    <section id="plant-care-advice" class="mt-4">
+      <h2 class="mb-3">Plant Care Advice</h2>
+      <!-- Plant care advice will go here -->
+    </section>
+
+    <section id="plant-health-monitoring" class="mt-4">
+      <h2 class="mb-3">Plant Health Monitoring</h2>
+      <!-- Plant health monitoring data will go here -->
+    </section>
+
+    <section id="relay-controls" class="mt-4">
+      <h2 class="mb-3">Relay Controls</h2>
+      <!-- Relay controls will go here -->
+      <div class="row">
+        <div class="relay-control col-lg-3" id="relay-18">
+          <input type="checkbox">
+          <label for="relay-18">Relay 18</label>
         </div>
-        <div class="gauge-wrapper">
-          <p>Humidity: <span id="humidity"></span>%</p>
-          <div id="gauge-humidity" class="gauge-container"></div>
+        <div class="relay-control col-lg-3" id="relay-23">
+          <input type="checkbox">
+          <label for="relay-23">Relay 23</label>
         </div>
-        <div class="gauge-wrapper">
-          <p>Moisture: <span id="moisture"></span></p>
-          <div id="gauge-moisture" class="gauge-container"></div>
+        <div class="relay-control col-lg-3" id="relay-24">
+          <input type="checkbox">
+          <label for="relay-24">Relay 24</label>
+        </div>
+        <div class="relay-control col-lg-3" id="relay-25">
+          <input type="checkbox">
+          <label for="relay-25">Relay 25</label>
         </div>
       </div>
-      <div class="relay-controls">
-        <div class="relay-control" id="relay-17">
-          <h2>Relay 1:</h2>
-          <label class="switch">
-            <input type="checkbox" id="relay-17-checkbox" onchange="setRelay(17, this.checked ? 'on' : 'off')">
-            <div><span></span></div>
-          </label>
-          <label class="toggle-control">
-            <input type="checkbox">
-            <span class="control"></span>
-          </label>
-        </div>
-        <div class="relay-control" id="relay-27">
-          <h2>Relay 2:</h2>
-          <label class="switch">
-            <input type="checkbox" id="relay-27-checkbox" onchange="setRelay(27, this.checked ? 'on' : 'off')">
-            <div><span></span></div>
-          </label>
-          <label class="toggle-control">
-            <input type="checkbox">
-            <span class="control"></span>
-          </label>
-        </div>
-        <div class="relay-control" id="relay-22">
-          <h2>Relay 3:</h2>
-          <label class="switch">
-            <input type="checkbox" id="relay-22-checkbox" onchange="setRelay(22, this.checked ? 'on' : 'off')">
-            <div><span></span></div>
-          </label>
-          <label class="toggle-control">
-            <input type="checkbox">
-            <span class="control"></span>
-          </label>
-        </div>
-        <div class="relay-control" id="relay-10">
-          <h2>Relay 4:</h2>
-          <label class="switch">
-            <input type="checkbox" id="relay-10-checkbox" onchange="setRelay(10, this.checked ? 'on' : 'off')">
-            <div><span></span></div>
-          </label>
-          <label class="toggle-control">
-            <input type="checkbox">
-            <span class="control"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <script>
-    // Initialize state of relays
-    var relayState = {
-        18: false,
-        23: false,
-        24: false,
-        25: false
-    };
+    </section>
+  </main>
 
-    function setRelay(channel, state) {
-        relayState[channel] = (state === 'on');
-        console.log('Setting relay', channel, 'to', state);
-        fetch('/set-relay', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                channel: channel,
-                state: state
-            })
-        })
-
-    }
-
-
- // Fetch sensor data and update display elements
-    function updateSensorData() {
-      fetch('/static/data.json')
-          .then(response => response.json())
-          .then(data => {
-              document.getElementById('temperature').innerHTML = data.temperature.toFixed(1);
-              temperatureGauge.setValueAnimated(data.temperature);
-
-              document.getElementById('humidity').innerHTML = data.humidity.toFixed(1);
-              humidityGauge.setValueAnimated(data.humidity);
-
-              document.getElementById('moisture').innerHTML = data.moisture.toFixed(1);
-              moistureGauge.setValueAnimated(data.moisture);
-          })
-          .catch(error => console.error(error));
-    }
-
-
-    // Update gauge value when sensor data is fetched
-    function updateGaugeValue(value, type) {
-        switch(type) {
-            case 'temperature':
-                temperatureGauge.setValueAnimated(value);
-                break;
-            case 'humidity':
-                humidityGauge.setValueAnimated(value);
-                break;
-            case 'moisture':
-                moistureGauge.setValueAnimated(value);
-                break;
-            default:
-                break;
-        }
-    }
-
-    // Create the gauges instances
-    var temperatureGauge, humidityGauge, moistureGauge;
-    document.addEventListener("DOMContentLoaded", function() {
-        temperatureGauge = Gauge(
-            document.getElementById("gauge-temperature"),
-            {
-                max: 150,
-                value: 0,
-                label: 'Temperature (°C)',
-                color: '#FF7F50'
-            }
-        );
-
-        humidityGauge = Gauge(
-            document.getElementById("gauge-humidity"),
-            {
-                max: 100,
-                value: 0,
-                label: 'Humidity (%)',
-                color: '#00BFFF'
-            }
-        );
-
-        moistureGauge = Gauge(
-            document.getElementById("gauge-moisture"),
-            {
-                max: 2000,
-                value: 0,
-                label: 'Moisture',
-                color: '#3CB371'
-            }
-        );
-    });
-
-    // Set up event listeners for relay switches
-    document.querySelectorAll('.relay-control input[type="checkbox"]').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function(event) {
-            var channel = parseInt(event.target.closest('.relay-control').id.replace('relay-', ''));
-            var state = event.target.checked ? 'on' : 'off';
-            setRelay(channel, state);
-        });
-    });
-
-    // Fetch initial sensor data and update gauges
-    updateSensorData();
-
-    // Periodically update sensor data and gauges
-    setInterval(updateSensorData, 5000);
-</script>        
-    <footer>
-        <p>Grow Tent Control</p>
-    </footer>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="./static/script.js"></script>
 </body>
+
 </html>
-
-
