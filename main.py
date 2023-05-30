@@ -39,7 +39,6 @@ def gen():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
           
-
 def read_sensor_data():
     # Read temperature in Celsius
     temperature_c = sht.temperature
@@ -92,6 +91,21 @@ def sensor_data():
     jsonSensorData = jsonify(data)
     return jsonSensorData
 
+@app.route('/plant-care-advice')
+def plant_care_advice():
+    # TODO: Replace with your actual plant care advice data
+    data = {
+        "advice": "Placeholder advice"
+    }
+    return jsonify(data)
+
+@app.route('/plant-health-data')
+def plant_health_data():
+    # TODO: Replace with your actual plant health data
+    data = {
+        "health": "Placeholder health data"
+    }
+    return jsonify(data)
 
 @app.route('/video_feed')
 def video_feed():
@@ -101,3 +115,4 @@ def video_feed():
 # Run the Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
