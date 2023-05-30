@@ -125,7 +125,7 @@ document.querySelectorAll('.relay-control input[type="checkbox"]').forEach(funct
     });
 });
 
-
+// Periodically update sensor data, plant
 // Periodically update sensor data, plant care advice and health data
 setInterval(updateSensorData, 5000);
 setInterval(updatePlantCareAdvice, 5000);
